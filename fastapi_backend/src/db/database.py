@@ -1,5 +1,6 @@
 import os
 from typing import AsyncGenerator, Optional
+from urllib.parse import urlparse
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -42,18 +43,26 @@ def _build_db_url() -> str:
        - DATABASE_URL=postgresql+asyncpg://user:pass@host:port/db
        - POSTGRES_URL=postgresql://user:pass@host:port/db
 
+       Important:
+       - Some runtimes provide POSTGRES_URL without credentials (e.g., postgresql://host:port/db).
+         In that case, we MUST use POSTGRES_USER/POSTGRES_PASSWORD, otherwise asyncpg will fall back
+         to the OS user (often 'kavia') and the connection fails with "role does not exist".
+
     2) Component fields:
        - POSTGRES_HOST (or POSTGRES_URL as hostname), POSTGRES_PORT, POSTGRES_DB,
          POSTGRES_USER, POSTGRES_PASSWORD
 
     Notes:
     - We avoid import-time crashes due to slightly different env var conventions.
-    - If a full DSN is provided, we use it verbatim (normalized to asyncpg).
+    - If a full DSN is provided *with userinfo*, we use it verbatim (normalized to asyncpg).
     """
-    # Prefer explicit full DSN if provided
     explicit_dsn = _first_non_empty(os.getenv("DATABASE_URL"), os.getenv("POSTGRES_URL"))
     if explicit_dsn.startswith(("postgresql://", "postgresql+asyncpg://")):
-        return _normalize_async_dsn(explicit_dsn)
+        parsed = urlparse(explicit_dsn)
+        # If username is missing, treat it as a host-only DSN and fall back to composing
+        # with POSTGRES_USER/POSTGRES_PASSWORD/etc.
+        if parsed.username:
+            return _normalize_async_dsn(explicit_dsn)
 
     host = _first_non_empty(os.getenv("POSTGRES_HOST"), os.getenv("POSTGRES_URL"))
     user = _first_non_empty(os.getenv("POSTGRES_USER"))
@@ -68,7 +77,6 @@ def _build_db_url() -> str:
         )
 
     port_part = f":{port}" if port else ""
-    # Keep behavior consistent with existing code: require credentials/db to come from env.
     return f"postgresql+asyncpg://{user}:{password}@{host}{port_part}/{db}"
 
 
