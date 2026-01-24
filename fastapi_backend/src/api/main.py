@@ -79,6 +79,12 @@ def health_check() -> Dict[str, str]:
     return {"message": "Healthy"}
 
 
+@app.get("/healthz", tags=["Health"], summary="Health Check (healthz)")
+def healthz() -> Dict[str, str]:
+    """Kavia/PreviewManager health check endpoint (matches HEALTHCHECK_PATH)."""
+    return {"message": "Healthy"}
+
+
 @app.get(
     "/api/search/{username}",
     tags=["Search"],
