@@ -14,11 +14,13 @@ class Profile(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     username: str = Field(index=True, nullable=False, unique=True)
+    full_name: Optional[str] = Field(default=None)
     bio: Optional[str] = Field(default=None)
 
     avatar_url: Optional[str] = Field(default=None)
     followers: int = Field(default=0)
     following: int = Field(default=0)
+    public_repos: int = Field(default=0)
 
     total_stars: int = Field(default=0)
 

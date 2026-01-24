@@ -77,10 +77,12 @@ async def get_profile_insights(
     if cached is None:
         cached = Profile(username=normalized)
 
+    cached.full_name = user_json.get("name")
     cached.bio = user_json.get("bio")
     cached.avatar_url = user_json.get("avatar_url")
     cached.followers = int(user_json.get("followers") or 0)
     cached.following = int(user_json.get("following") or 0)
+    cached.public_repos = int(user_json.get("public_repos") or 0)
     cached.total_stars = int(total_stars)
     cached.top_languages = top_languages
     cached.last_updated = datetime.utcnow()
