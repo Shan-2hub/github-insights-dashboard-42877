@@ -1,1 +1,3 @@
-# github-insights-dashboard-42877
+# Project Repository
+
+This is the initial README file for the project.
