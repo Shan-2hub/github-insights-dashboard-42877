@@ -11,6 +11,9 @@ h11==0.14.0
 httpcore==1.0.7
 httptools==0.6.4
 httpx==0.28.1
+sqlalchemy==2.0.37
+sqlmodel==0.0.31
+asyncpg==0.31.0
 idna==3.10
 iniconfig==2.1.0
 Jinja2==3.1.6
